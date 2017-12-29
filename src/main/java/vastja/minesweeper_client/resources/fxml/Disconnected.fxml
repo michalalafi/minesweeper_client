@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import java.net.URL?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import nodes.*?>
+
+<BorderPane fx:controller="vastja.minesweeper_client.controllers.DisconnectedController" xmlns:fx="http://javafx.com/fxml" stylesheets="vastja/minesweeper_client/resources/css/style.css">
+	<center>
+		<VBox id="reconnecting-failed-vbox">
+			<Label text="You are disconnected :("/>
+		</VBox>
+	</center>
+	<bottom>
+		<VBox id="connection-vbox" fx:id="conVbox">
+			<Button fx:id="exitButton" text="Exit" onAction = "#exitApp"/>
+		</VBox>
+	</bottom>
+</BorderPane>

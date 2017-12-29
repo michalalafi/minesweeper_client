@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import java.net.URL?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import nodes.*?>
+
+<BorderPane fx:controller="vastja.minesweeper_client.controllers.GameController" xmlns:fx="http://javafx.com/fxml" stylesheets="vastja/minesweeper_client/resources/css/style.css">
+	<top>
+		<VBox id="info-vbox">
+			<Label id="info-label" fx:id="infoLabel"/>
+		</VBox>
+	</top>
+	<center>
+		<VBox id="game-vbox">
+			<children>
+				<vastja.minesweeper_client.nodes.Board name="board" id="my-board" fx:id ="board"/>		
+			</children>
+			<VBox id="game-controll-vbox">
+				<Button id="game-button" fx:id="surrenderButton" text="Surrender" onAction = "#surrender"/>
+				<Button id="game-button" fx:id="exitToMainMenuButton" text="Exit to main menu" onAction = "#exitToMainMenuGame"/>
+			</VBox>
+		</VBox>
+			
+	</center>
+	<bottom>
+		<VBox id="connection-vbox" fx:id="conVbox">
+			<Label fx:id="conInfoLabel"/>
+		</VBox>
+	</bottom>
+</BorderPane>

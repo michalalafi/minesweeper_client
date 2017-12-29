@@ -1,0 +1,64 @@
+#main-menu-vbox {
+	-fx-alignment: center;
+	-fx-spacing: 5px;
+}
+
+#game-vbox {
+	-fx-alignment: center;
+	-fx-spacing: 5px;
+}
+
+#my-board {
+	-fx-alignment: center;
+}
+
+#reconnecting-failed-vbox {
+	-fx-font-size: 20px;
+	-fx-alignment: center;
+}
+
+#connection-vbox {
+	-fx-spacing: 10px;
+	-fx-padding: 10px;
+	-fx-alignment: center;
+}
+
+#connection-vbox-connected {
+	-fx-background-color: olivedrab;
+	-fx-spacing: 10px;
+	-fx-padding: 10px;
+	-fx-alignment: center;
+}
+
+#connection-vbox-reconnecting {
+	-fx-background-color: goldenrod;
+	-fx-spacing: 10px;
+	-fx-padding: 10px;
+	-fx-alignment: center;
+}
+
+#game-controll-vbox {
+	-fx-padding: 10px;
+	-fx-spacing: 5px;
+	-fx-alignment: center;
+}
+
+.button {
+	-fx-alignment: center;
+	-fx-pref-width: 500px;
+	-fx-pref-height: 50px;
+	-fx-font-weight: bold;
+}
+
+#info-vbox {
+	-fx-spacing: 5px;
+	-fx-padding: 10px;
+	-fx-alignment: center;
+	-fx-font-size: 30px;
+}
+
+#resp-info-vbox {
+	-fx-spacing: 10px;
+	-fx-padding: 10px;
+	-fx-alignment: center;
+}
