@@ -1,5 +1,6 @@
 package vastja.minesweeper_client.utils;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class Request {
@@ -17,26 +18,32 @@ public class Request {
 	
 	public byte[] getMessageToSend(int id) {
 		
-		byte message[];
-		if (this.message == null) {
-			message = new byte[5];
-		}
-		else {
-			message = new byte[5 + this.message.length()];
-		}
+		StringBuilder sb = new StringBuilder();
 		
-		// 16bit int
-		message[0] = Client.STX;
-		message[1] = (byte) (id >> 8 & 0xFF);
-		message[2] = (byte) (id & 0xFF);
-		message[3] = (byte) reqId;	
-		message[message.length - 1] =  Client.ETX;
+		sb.append(Client.STX);
+		
+		char fByte = (char) (id >> 8 & 0xFF);
+		char sByte = (char) (id & 0xFF);
+		
+		if (fByte == Client.ETX || fByte == Client.STX) {
+			sb.append(Client.ESCAPE_CHAR);
+		}
+		sb.append(fByte);
+		
+		if (sByte == Client.ETX || sByte == Client.STX) {
+			sb.append(Client.ESCAPE_CHAR);
+		}
+		sb.append(sByte);
+		
+		sb.append(reqId);	
 		
 		if (this.message != null) {
-			byte messageBytes[] = this.message.getBytes(StandardCharsets.UTF_8);
-			System.arraycopy(messageBytes, 0, message, 4, messageBytes.length);
+			sb.append(this.message);
 		}
 		
+		sb.append(Client.ETX);
+		
+		byte message[] = sb.toString().getBytes(StandardCharsets.UTF_8);
 		return message;
 		
 	}

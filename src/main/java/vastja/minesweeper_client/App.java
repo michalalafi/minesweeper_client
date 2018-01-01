@@ -26,31 +26,67 @@ public class App extends Application {
 	
 	private static boolean inGame = false;
 	
+	private static boolean reconnectToGame = false;
+	private static int gameId = -1;
+	private static String gameCode = null;
+	
 	@Override
 	public void start(Stage stage) throws IOException {
 		
 		primaryStage = stage;
 		primaryStage.setTitle("Minesweeper");
-		mainMenu();
 
 		Client client = Client.getConnection();
 		Thread clientThread = new Thread(client);
 		clientThread.setDaemon(true);
 		clientThread.start();
 		
+		if (reconnectToGame) {
+			game(gameCode, gameId);
+			gameController.reconnected();
+		}
+		else {
+			mainMenu();
+		}
+		
 	}
 	
 	public static void main(String[] args) {
 		
-		if (args.length == 2) {
-			Client.setIpAdress(args[0]);
-			Client.setPort(Integer.valueOf(args[1]));
+		try {
+			if (args.length == 1) {
+				if (args[0].equalsIgnoreCase("--help") || args[0].equalsIgnoreCase("-h")) {
+					System.out.println("USAGE: Minesweeper_client.jar <ip-adress> <port> [gameId] [gameCode]");
+				}
+				else {
+					System.out.println("USAGE: Minesweeper_client.jar <ip-adress> <port> [gameId] [gameCode]");
+				}
+				exitApp();
+			}
+			else if (args.length == 2) {
+				Client.setIpAdress(args[0]);
+				Client.setPort(Integer.valueOf(args[1]));
+				launch(args);
+			}
+			else if (args.length == 4) {
+				Client.setIpAdress(args[0]);
+				Client.setPort(Integer.valueOf(args[1]));
+				gameId = Integer.valueOf(args[2]);
+				gameCode = args[3];
+				reconnectToGame = true;
+				launch(args);
+			}
+			else {
+				System.out.println("USAGE: Minesweeper_client.jar <ip-adress> <port> [gameId] [gameCode]");
+				exitApp();
+			}
 		}
-		else {
-			System.out.println("USAGE: Minesweeper_client.jar <ip-adress> <port>");
+		catch (Exception e) {
+			System.err.println("Error during application start.");
+			System.out.println("USAGE: Minesweeper_client.jar <ip-adress> <port> [gameId] [gameCode]");
+			exitApp();
 		}
 		
-		launch(args);
 	}
 	
 	public static void mainMenu() {
@@ -82,6 +118,8 @@ public class App extends Application {
 			
 			gameController.setGameCode(gameCode);
 			gameController.setGameId(id);
+			
+			gameController.refreshGamePropertieslabels();
 			
 			Scene scene = new Scene(game, 900, 600);
 

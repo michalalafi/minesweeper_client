@@ -7,6 +7,7 @@
 <?import java.lang.*?>
 <?import java.util.*?>
 <?import nodes.*?>
+<?import javafx.scene.control.TextField?>
 
 <BorderPane fx:controller="vastja.minesweeper_client.controllers.GameController" xmlns:fx="http://javafx.com/fxml" stylesheets="vastja/minesweeper_client/resources/css/style.css">
 	<top>
@@ -16,6 +17,12 @@
 	</top>
 	<center>
 		<VBox id="game-vbox">
+			<GridPane id="game-grid-pane" alignment="center">
+				<Label text="Game ID: " GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+				<TextField id="gameId-field" fx:id="gameIdField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+				<Label text="Game code: " GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+				<TextField id="gameCode-field" fx:id="gameCodeField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+			</GridPane>
 			<children>
 				<vastja.minesweeper_client.nodes.Board name="board" id="my-board" fx:id ="board"/>		
 			</children>

@@ -223,6 +223,7 @@ public class Client implements Runnable {
 				failedToSend++;
 				if (failedToSend > MAX_SEND_FAILURE_COUNT) {
 					Platform.runLater(() -> App.getController().disconnected());
+					System.out.println("Max failed to send disconnect");
 				}
 			}
 		}
@@ -349,18 +350,28 @@ public class Client implements Runnable {
 				executeReconnectedRefuse(response);
 				break;
 			case RECONNECT:
-				executeReconnectToGame();
+				executeReconnectToGame(response);
 				break;
-			// TODO
 			case START_GAME_REFUSED:
+				System.out.println("Got START_GAME_REFUSED response [Request ID: " + (int) response.reqId + "] - " + response.message);
+				break;
 			case REVEAL_REFUSED:
+				System.out.println("Got REVEAL_REFUSED response [Request ID: " + (int) response.reqId + "] - " + response.message);
+				break;
 			case END_GAME_REFUSED:
+				System.out.println("Got END_GAME_REFUSED response [Request ID: " + (int) response.reqId + "] - " + response.message);
+				break;
 			case SURRENDER_REFUSED:
 				executeResponseRefused();
 				break;
 			case ALIVE:
+				System.out.println("Got ALIVE response [Request ID: " + (int) response.reqId + "]");
+				break;
 			case START_GAME_ACCEPTED:
+				System.out.println("Got START_GAME_ACEEPTED response [Request ID: " + (int) response.reqId + "]");
+				break;
 			case MESSAGE_BAD_FORMAT:
+				System.out.println("Got MESSAGE_BAD_FORMAT response [Request ID: " + (int) response.reqId + "] - " + response.message);
 				break;
 			default:
 				corruptedMessagesCount++;
@@ -553,7 +564,7 @@ public class Client implements Runnable {
 		});
 	}
 	
-	private void executeReconnectToGame() {
+	private void executeReconnectToGame(Response response) {
 		Platform.runLater(() -> {
 			
 			GameController gameController = App.getGameController();
@@ -562,6 +573,8 @@ public class Client implements Runnable {
 			}
 						
 		});
+		
+		System.out.print("Got ECONNECT response [Request ID: " + (int) response.reqId + "]");
 	}
 	
 	private void executeResponseRefused() {

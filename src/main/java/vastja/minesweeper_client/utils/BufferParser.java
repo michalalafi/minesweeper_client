@@ -37,9 +37,6 @@ public class BufferParser {
 	        }
 	        else if (buffer[i] == Client.ESCAPE_CHAR) {
 	            escape = true;
-	            if (start) {
-	            	baos.write(buffer[i]);
-	            }
 	        }
 	        else if (buffer[i] == Client.STX) {
 	            start = true;

@@ -40,6 +40,7 @@ public class ComunicationManager {
 		for (int i = 0; i < items.length; i++) {
 			if (items[i] != null && System.currentTimeMillis() - items[i].sentTime >= MAX_TIME_TO_RESPONSE) {
 				if (items[i].resent) {
+					System.out.println(i + " request timeout");
 					return false;
 				}
 				else {
@@ -101,8 +102,10 @@ public class ComunicationManager {
 			case Client.SURRENDER_LOSE:
 			case Client.END_GAME_REFUSED:
 			case Client.LOSE:
+			case Client.END_GAME:
 				return 2;
 			case Client.SEND_ID:
+			case Client.RECONNECT:
 			case Client.RECONNECT_REFUSED:
 				return 3;
 			case Client.ALIVE:

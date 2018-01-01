@@ -1,6 +1,5 @@
 package vastja.minesweeper_client.controllers;
 
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -9,6 +8,7 @@ import java.util.TimerTask;
 
 import com.sun.corba.se.impl.ior.GenericTaggedComponent;
 
+import javafx.scene.control.TextField;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -31,7 +31,7 @@ public class GameController implements Initializable, IController {
 	private static boolean isMyTurn = false;
 	private static Timer connectionTimer; 
 
-	
+	private boolean disconnected =  false;
 	private String gameCode;
 	private int gameId;
 	
@@ -40,6 +40,12 @@ public class GameController implements Initializable, IController {
     
     @FXML
     public Label infoLabel;
+    
+    @FXML
+    public TextField gameIdField;
+    
+    @FXML
+    public TextField gameCodeField;
     
     @FXML
     public Button surrenderButton;
@@ -79,6 +85,8 @@ public class GameController implements Initializable, IController {
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		
+		refreshGamePropertieslabels();
+		
 		gameInProgress = true;
 		infoLabel.setText("OPONENT TURN");
 		
@@ -97,6 +105,11 @@ public class GameController implements Initializable, IController {
 			  
 			}, 0, 1000);	
 		
+	}
+	
+	public void refreshGamePropertieslabels() {
+		gameIdField.setText(String.valueOf(gameId));
+		gameCodeField.setText(gameCode);
 	}
 	
 	private void endGame() {
@@ -204,6 +217,8 @@ public class GameController implements Initializable, IController {
 	@Override
 	public void disconnected() {
 		
+		disconnected = true;
+		
 		Client.getConnection().disconnect();
 		
 		reconnecting();
@@ -231,6 +246,7 @@ public class GameController implements Initializable, IController {
 	}
 	
 	public void reconnectedToGame() {
+		refreshGamePropertieslabels();
 		conInfoLabel.setText(RECONNECT_TO_GAME);
 		conVbox.setId("connection-vbox-connected");
 	}
