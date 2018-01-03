@@ -3,14 +3,14 @@ package vastja.minesweeper_client.utils;
 public class ComunicationManager {
 
 	private ComunicationItem items[];
-	private static final int MAX_TIME_TO_RESPONSE = 1000;
+	private static final int MAX_TIME_TO_RESPONSE = 2000;
 	
 	public ComunicationManager() {
-		items = new ComunicationItem[5];
+		items = new ComunicationItem[6];
 	}
 	
 	public void reset() {
-		items = new ComunicationItem[5];
+		items = new ComunicationItem[6];
 	}
 	
 	public void addRequest(Request request) {	
@@ -46,8 +46,11 @@ public class ComunicationManager {
 				else {
 					Request req = items[i].request;
 					items[i] = null;
+					System.err.println("REQ + [" + (int) req.reqId + "] RESENT");
 					Client.getConnection().send(req);
-					items[i].resent = true;
+					if (items[i] != null) {
+						items[i].resent = true;
+					}
 				}
 			}
 		}
@@ -84,6 +87,8 @@ public class ComunicationManager {
 				return 3;
 			case Client.ALIVE:
 				return 4;
+			case Client.SEND_ID:
+				return 5;
 			default:
 				return -1;
 		}
@@ -104,12 +109,13 @@ public class ComunicationManager {
 			case Client.LOSE:
 			case Client.END_GAME:
 				return 2;
-			case Client.SEND_ID:
 			case Client.RECONNECT:
 			case Client.RECONNECT_REFUSED:
 				return 3;
 			case Client.ALIVE:
 				return 4;
+			case Client.SEND_ID:
+				return 5;
 			default:
 				return -1;
 		}

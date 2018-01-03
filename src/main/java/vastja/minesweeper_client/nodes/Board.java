@@ -29,6 +29,9 @@ public class Board extends GridPane {
 	}
 	
 	public Cell getCell(int row, int column) {
+		if (row >= size || row < 0 || column >= size || column < 0) {
+			return null;
+		}
 		return this.cells[row][column];
 	}
 	

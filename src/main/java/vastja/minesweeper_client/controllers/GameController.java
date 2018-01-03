@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import vastja.minesweeper_client.App;
 import vastja.minesweeper_client.nodes.Board;
+import vastja.minesweeper_client.nodes.Cell;
 import vastja.minesweeper_client.utils.Client;
 import vastja.minesweeper_client.utils.Request;
 
@@ -71,12 +72,11 @@ public class GameController implements Initializable, IController {
     @FXML
     public void exitToMainMenuGame() throws IOException {
     	
-    	connectionTimer.cancel();
-    	
     	if (gameInProgress) {
-	    	Request request = new Request(Client.END_GAME);
+    		Request request = new Request(Client.END_GAME);
 	    	Client.getConnection().send(request);
     	}
+	    endGame();
     	App.mainMenu();
     	
     }
@@ -116,7 +116,11 @@ public class GameController implements Initializable, IController {
 		surrenderButton.setDisable(true);
 		gameInProgress = false;
 		isMyTurn = false;
-		connectionTimer.cancel();	
+		
+		if (connectionTimer != null) {
+	    	connectionTimer.cancel();
+	    	connectionTimer = null;
+    	}
 	}
 	
 	public void win(String reason) {
@@ -149,9 +153,7 @@ public class GameController implements Initializable, IController {
 	}
 	
 	public void draw() {
-		gameInProgress = false;
-		isMyTurn = false;
-		connectionTimer.cancel();
+		endGame();
 		infoLabel.setText("GAME ENDED WITH DRAW");
 	}
 	
@@ -163,24 +165,38 @@ public class GameController implements Initializable, IController {
 			request.addDataSeg(String.valueOf(row));
 			request.addDataSeg(String.valueOf(column));
 			
-			isMyTurn = false;
-			infoLabel.setText("OPONENT TURN");
-			
 			Client.getConnection().send(request);
 		}
 	}
 	
 	public void solve(int row, int column, int result) {
-		this.board.getCell(row, column).hit(result);
+		Cell cell = this.board.getCell(row, column);
+		if (cell == null) {
+			reconnectToGame();
+		}
+		else {
+			cell.hit(result);
+		}
 	}
 	
 	public void endGameSolve(int row, int column, int result) {
-		this.board.getCell(row, column).endGameReveal(result);
+		Cell cell = this.board.getCell(row, column);
+		if (cell == null) {
+			reconnectToGame();
+		}
+		else {
+			cell.endGameReveal(result);
+		}
 	}
 	
 	public void setMyTurn() {
 		isMyTurn = true;
 		infoLabel.setText("YOUR TURN");
+	}
+	
+	public void endMyTurn() {
+		isMyTurn = false;
+		infoLabel.setText("OPONENT TURN");
 	}
 	
 	public void endGameReveal() {
@@ -210,7 +226,7 @@ public class GameController implements Initializable, IController {
 
 	@Override
 	public void goToDisconnectPage() {
-		connectionTimer.cancel();
+		endGame();
 		App.disconnected();
 	}
 	
@@ -261,6 +277,7 @@ public class GameController implements Initializable, IController {
 	
 	@Override
 	public void responseTimeout() {
+		System.out.println("RESPONSE timeout");
 		disconnected();
 	}
 	
@@ -272,21 +289,24 @@ public class GameController implements Initializable, IController {
 	
 	@Override
 	public void corruptedMessages() {
-		//TODO
+		System.out.println("Corrupted message");
+		reconnectToGame();
 	}
 	
 	public void reconRefused() {
-		connectionTimer.cancel();
+		endGame();
 		App.recRefused();
 	}
 	
 	@Override
 	public void requestRefused() {
+		System.out.println("Request refused");
 		disconnected();
 	}
 	
 	@Override
 	public void reconnected() {
+		System.out.println("Reconnect");
 		connected();
 		reconnectToGame();
 	}

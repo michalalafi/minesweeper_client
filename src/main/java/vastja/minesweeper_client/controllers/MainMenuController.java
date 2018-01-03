@@ -47,8 +47,7 @@ public class MainMenuController implements Initializable, IController {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
     	startGamePressed = false;
-    	
-    	Client.getConnection().testConnection();
+    	connected();
 	}
     
     @FXML
@@ -90,16 +89,19 @@ public class MainMenuController implements Initializable, IController {
 	
 	@Override
 	public void responseTimeout() {
+		System.out.println("Response timeout");
 		disconnected();
 	}
 	
 	@Override
 	public void corruptedMessages() {
+		System.out.println("Corrupted messages");
 		disconnected();
 	}
 	
 	@Override
 	public void requestRefused() {
+		System.out.println("Request refused");
 		disconnected();
 	}
 	

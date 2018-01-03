@@ -138,6 +138,8 @@ public class App extends Application {
 		
 		try {
 			
+			Client.getConnection().disconnect();
+			
 			gameController = null;
 			
 			FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(DISCON_FXML));

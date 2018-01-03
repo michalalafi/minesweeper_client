@@ -49,6 +49,7 @@ public class Client implements Runnable {
 	public static final char TIMEOUT_LOSE = 24;
 	public static final char ALIVE = 25;
 	public static final char MESSAGE_BAD_FORMAT = 26;
+	public static final char END_TURN = 27;
 	
 	public static final String D = "death";
 	public static final String T = "timeout";
@@ -59,7 +60,7 @@ public class Client implements Runnable {
 	public static final char ESCAPE_CHAR = '/';
 	public static final char DIV_CHAR = ';';
 	
-	private static final int BUFFER_SIZE = 1024;
+	private static final int BUFFER_SIZE = 2048;
 	
 	private static String ipAdress;
 	private static int port;
@@ -70,11 +71,11 @@ public class Client implements Runnable {
 	private static final int MAX_CONNECT_FAILURE_COUNT = 15;
 	private static final int TRY_CONNECT_DELAY = 500;
 	
-	private static int failedToSend = 0;
-	private static final int MAX_SEND_FAILURE_COUNT = 5;
+//	private static int failedToSend = 0;
+//	private static final int MAX_SEND_FAILURE_COUNT = 5;
 	
 	private Timer comunicationTimer;
-	private static final int CON_TIMER_INTERVAL = 2000;
+	private static final int CON_TIMER_INTERVAL = 500;
 	private ComunicationManager comunicationManager;
 	
 	private static Client connection = null;
@@ -82,15 +83,17 @@ public class Client implements Runnable {
 	private InputStream is;
 	private Socket socket;
 	
-	private int corruptedMessagesCount = 0;
+	private static int corruptedMessagesCount = 0;
 	private static final int MAX_CORRUPTED_MESSAGES_IN_ROW = 5;
 	private int id;
 	private static boolean read;
 	private static boolean wasDisconnected;
+	private static boolean wasRunning;
 	
 	public Client() {
 		comunicationManager = new ComunicationManager();
 		wasDisconnected = false;
+		wasRunning = false;
 	}
 	
 	public static Client getConnection() {
@@ -158,7 +161,8 @@ public class Client implements Runnable {
 			else {
 				Platform.runLater(() -> App.getController().connected());
 			}
-	
+			
+			comunicationManager.addRequest(new Request(SEND_ID));
 			listen();
 			
 		}
@@ -170,6 +174,7 @@ public class Client implements Runnable {
 			failedToConnect++;
 			if (failedToConnect > MAX_CONNECT_FAILURE_COUNT) {
 				Platform.runLater(() -> App.getController().goToDisconnectPage());
+				System.err.println("Max connect failure count disconnect.");
 			}
 			else {
 				
@@ -209,22 +214,16 @@ public class Client implements Runnable {
 		if (os != null) {
 			
 			try {
+				System.out.println("SEND reqId:" + (int) request.reqId);
 				os.write(request.getMessageToSend(id));
 				comunicationManager.addRequest(request);
-				failedToSend = 0;
 			
 				Platform.runLater(() -> App.getController().connected()); 
 				
 			} catch (IOException e) {
 				
-				wasDisconnected = true;
-				Platform.runLater(() -> App.getController().reconnecting());
-				
-				failedToSend++;
-				if (failedToSend > MAX_SEND_FAILURE_COUNT) {
-					Platform.runLater(() -> App.getController().disconnected());
-					System.out.println("Max failed to send disconnect");
-				}
+				Platform.runLater(() -> App.getController().disconnected());
+				System.out.println("Failed to send disconnect");
 			}
 		}
 	}
@@ -232,9 +231,11 @@ public class Client implements Runnable {
 	@Override
 	public void run() {
 		
-		
-		disconnect();
-	
+		if (wasRunning) {
+			disconnect();
+		} else {
+			wasRunning = true;
+		}
 		
 		comunicationTimer = new Timer();
 		
@@ -245,6 +246,7 @@ public class Client implements Runnable {
 				if(!comunicationManager.check()) {
 					comunicationManager.reset();
 					Platform.runLater(() -> App.getController().responseTimeout());	
+					System.err.println("Response timeout");
 				}
 			}
 			
@@ -274,13 +276,14 @@ public class Client implements Runnable {
 					wasDisconnected = true;
 					socket.close();
 					Platform.runLater(() -> App.getController().disconnected());
+					System.out.println("Server closed connection disconnect");
 					break;
 				}
 				
-				for (int j = 0; j < BUFFER_SIZE; j++) {
-					System.out.print(buffer[j] + "-");
-				}
-				System.out.println();
+//				for (int j = 0; j < BUFFER_SIZE; j++) {
+//					System.out.print(buffer[j] + "-");
+//				}
+//				System.out.println();
 					
 				List<Response> responses = BufferParser.getResponses(buffer);
 				corruptedMessagesCount += BufferParser.badFormatMessageCount;
@@ -362,16 +365,19 @@ public class Client implements Runnable {
 				System.out.println("Got END_GAME_REFUSED response [Request ID: " + (int) response.reqId + "] - " + response.message);
 				break;
 			case SURRENDER_REFUSED:
-				executeResponseRefused();
+				System.out.println("Got SURRENDER_REFUSED response [Request ID: " + (int) response.reqId + "] - " + response.message);
 				break;
 			case ALIVE:
 				System.out.println("Got ALIVE response [Request ID: " + (int) response.reqId + "]");
 				break;
 			case START_GAME_ACCEPTED:
-				System.out.println("Got START_GAME_ACEEPTED response [Request ID: " + (int) response.reqId + "]");
+				System.out.println("Got START_GAME_ACCEPTED response [Request ID: " + (int) response.reqId + "]");
 				break;
 			case MESSAGE_BAD_FORMAT:
 				System.out.println("Got MESSAGE_BAD_FORMAT response [Request ID: " + (int) response.reqId + "] - " + response.message);
+				break;
+			case END_TURN:
+				executeEndTurnResponse(response);
 				break;
 			default:
 				corruptedMessagesCount++;
@@ -504,6 +510,19 @@ public class Client implements Runnable {
 		System.out.println("Got START_TURN response [Request ID: " + (int) response.reqId + "]");
 	}
 	
+	private void executeEndTurnResponse(Response response) {
+		
+		Platform.runLater(() -> {
+			GameController gameController = App.getGameController();
+			if (gameController != null) {
+				gameController.endMyTurn();
+			}
+		});
+			
+		
+		System.out.println("Got END_TURN response [Request ID: " + (int) response.reqId + "]");
+	}
+
 	private void executeEndGameRevealResponse(Response response) {
 		String parsed[] = parseMessage(response.message);
 		
@@ -574,11 +593,7 @@ public class Client implements Runnable {
 						
 		});
 		
-		System.out.print("Got ECONNECT response [Request ID: " + (int) response.reqId + "]");
-	}
-	
-	private void executeResponseRefused() {
-		Platform.runLater(() -> App.getController().requestRefused());
+		System.out.println("Got RECONNECT response [Request ID: " + (int) response.reqId + "]");
 	}
 	
 	public int getId() {
